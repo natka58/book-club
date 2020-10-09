@@ -5,57 +5,46 @@ import { LOGIN_USER } from '../utils/mutations';
 // import { loginUser } from '../utils/API';
 import Auth from '../utils/auth';
 import { useMutation } from '@apollo/react-hooks';
+
 const LoginForm = () => {
-  const [loginUser, { error }] = useMutation(LOGIN_USER);
+  const [login, {error} ] = useMutation(LOGIN_USER);
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
   const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
   const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setUserFormData({ ...userFormData, [name]: value });
+      const { name, value } = event.target;
+      setUserFormData({
+          ...userFormData,
+          [name]: value
+      });
   };
 
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
-
-    // check if form has everything (as per react-bootstrap docs)
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
+  const handleFormSubmit = async event => {
       event.preventDefault();
-      event.stopPropagation();
-    }
 
-    // try {
-    //   const response = await loginUser(userFormData);
+      // check if form has everything (as per react-bootstrap docs)
+      // const form = event.currentTarget;
+      // if (form.checkValidity() === false) {
+      //   event.preventDefault();
+      //   event.stopPropagation();
+      // }
 
-    //   if (!response.ok) {
-    //     throw new Error('something went wrong!');
-    //   }
+      try {
+          const { data } = await login({
+              variables: {...userFormData}
+          });
+          Auth.login(data.login.token);
+      } catch (e) {
+          console.error(e);
+          setShowAlert(true);
+      }
 
-    //   const { token, user } = await response.json();
-    //   console.log(user);
-    //   Auth.login(token);
-    // } catch (err) {
-    //   console.error(err);
-    //   setShowAlert(true);
-    // }
-try {
-
-  const { data } = await loginUser({
-    variables: { ...userFormData }
-  });
-  Auth.login(data.login.token);
-} catch (err) {
-  console.error(err);
-
-}
-
-    setUserFormData({
-      username: '',
-      email: '',
-      password: '',
-    });
+      setUserFormData({
+          username: '',
+          email: '',
+          password: '',
+      });
   };
 
   return (
